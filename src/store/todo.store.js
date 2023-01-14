@@ -1,6 +1,6 @@
 import { ToDo } from "../todos/models/todo-model"
 
-const Filters = {
+export const Filters = {
     All: 'all',
     Completed: 'completed',
     Pending: 'pending'
@@ -18,13 +18,23 @@ const state = {
 }
 
 const initStore = () => {
-    console.log(state);
+    loadStore();
     console.log(' InitStore Start ');
 }
 
 const loadStore = () => {
-    throw new Error ('Not Implemmented');
+    // console.log(localStorage.getItem('state'));
+    if (!localStorage.getItem('state')) return;
+
+    const {todos, filter=Filters.All} = JSON.parse(localStorage.getItem('state'))
+    state.todos=todos;
+    state.filter=filter;
 }
+
+const saveStateToLocalStorage = () => {
+    // console.log( JSON.stringify(state) );
+    localStorage.setItem('state',  JSON.stringify(state) );
+};
 
 const getTodos = ( filter = Filters.All) => {
     switch (filter) {
@@ -43,13 +53,15 @@ const getTodos = ( filter = Filters.All) => {
     }
 }
 
+
 /**
  * 
  * @param {String} description 
  */
 const addTodo = ( description ) => {
     if ( !description ) throw new Error('Description is requiered');
-    state.todo.push( new ToDo(description) );
+    state.todos.push( new ToDo(description) );
+    saveStateToLocalStorage();
 }
 
 /**
@@ -59,6 +71,7 @@ const addTodo = ( description ) => {
 const toggleTodo = ( todoId ) => {
     state.todos = state.todos.map( todo => {
         if( todo.id === todoId) todo.done = !todo.done;
+        saveStateToLocalStorage();
         return todo;
     } )
 }
@@ -68,29 +81,40 @@ const toggleTodo = ( todoId ) => {
  * @param {String} todoId ToDo identifier
  */
 const deleteTodo = ( todoId ) => {
-    state.todos = state.todos.filter(todo => todo.id !== todoId)
+    state.todos = state.todos.filter(todo => todo.id !== todoId);
+    saveStateToLocalStorage();
 }
 
 const deleteCompleted = () => {
-    state.todos = state.todos.filter(todo => todo.done)
+    state.todos = state.todos.filter(todo => !todo.done);
+    saveStateToLocalStorage();
 }
 /**
  * 
  * @param {Filters} newFilter 
  */
 const setFilter = ( newFilter = Filters.All ) => {
-    // Object.keys(Filters).forEach((filtro, id, Filters)=>{
-    //     console.log(`Dato: ${Filters[id]}`);
-    //     console.log(`filtro: ${filtro}, id: ${id}`);
-    // });
+  
+    // for(const [key, value] of Object.entries(Filters)){
+    //     console.log(`Key: ${key} --- Value: '${value}' `);
+    //     // if(value === newFilter.toString()){
+    //     //     console.log(`${value}, ${newFilter}`);
+    //     //     state.filter = newFilter;
+    //     //     return;
+    //     // } else {
+    //     // }
+    //     // saveStateToLocalStorage();
+    // }
     
     state.filter = newFilter;
+    saveStateToLocalStorage();
 }
 
 const getCurrentFilter = () => {
     return state.filter;
 }
 export default {
+    addTodo,
     deleteCompleted,
     deleteTodo,
     getCurrentFilter,
